@@ -2,6 +2,8 @@ NAME ?= utility-container
 TAG ?= latest
 CONTAINER ?= $(NAME):$(TAG)
 
+DISABLE_LINTERS ?= "-e VALIDATE_SHELL_SHFMT=false"
+
 REGISTRY ?= localhost
 UPLOADREGISTRY ?= quay.io/rhn_support_mbaldess
 TESTCOMMAND := "set -e; echo '* oc: '; oc version ; \
@@ -126,7 +128,7 @@ super-linter: ## Runs super linter locally
 					$(DISABLE_LINTERS) \
 					-v $(PWD):/tmp/lint:rw,z \
 					-w /tmp/lint \
-					docker.io/github/super-linter/slim@v7
+					ghcr.io/super-linter/super-linter:slim-v7
 
 .PHONY: upload
 upload: ## Uploads the container to quay.io/hybridcloudpatterns/${CONTAINER}
