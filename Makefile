@@ -1,4 +1,4 @@
-NAME ?= utility-container
+NAME ?= imperative-container
 TAG ?= latest
 CONTAINER ?= $(NAME):$(TAG)
 

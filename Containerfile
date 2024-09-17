@@ -20,7 +20,7 @@ LABEL org.opencontainers.image.title="${TITLE}" \
       license="${LICENSE}" \
       description="${DESCRIPTION}"
 
-ARG DNF_TO_REMOVE="dejavu-sans-fonts langpacks-core-font-en langpacks-core-en langpacks-en"
+ARG DNF_TO_REMOVE="dejavu-sans-fonts langpacks-core-font-en langpacks-core-en langpacks-en tar"
 ARG RPM_TO_FORCEFULLY_REMOVE="cracklib-dicts"
 # Versions
 ARG OPENSHIFT_CLIENT_VERSION="4.16.10"
@@ -51,16 +51,16 @@ RUN alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERS
 # Add requirements.yml file for ansible collections
 COPY requirements.yml /tmp/requirements.yml
 
-RUN microdnf --disableplugin=subscription-manager install -y make git-core jq which findutils diffutils sshpass $EXTRARPMS && \
-microdnf remove -y $DNF_TO_REMOVE && \
-rpm -e --nodeps $RPM_TO_FORCEFULLY_REMOVE && \
-microdnf clean all && \
-rm -rf /var/cache/dnf && \
+RUN microdnf --disableplugin=subscription-manager install -y make git-core tar jq which findutils diffutils sshpass $EXTRARPMS && \
 curl -sLfO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OPENSHIFT_CLIENT_VERSION}/openshift-client-linux-${OPTTARGETARCH}${OPENSHIFT_CLIENT_VERSION}.tar.gz && \
 tar xvf openshift-client-linux-${OPTTARGETARCH}${OPENSHIFT_CLIENT_VERSION}.tar.gz -C /usr/local/bin && \
 rm -rf openshift-client-linux-${OPTTARGETARCH}${OPENSHIFT_CLIENT_VERSION}.tar.gz  && rm -f /usr/local/bin/kubectl && ln -sf /usr/local/bin/oc /usr/local/bin/kubectl && \
 curl -sSL -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_${TARGETARCH} && chmod 755 /usr/local/bin/yq && \
-rm -rf /root/anaconda* /root/original-ks.cfg /usr/local/README
+rm -rf /root/anaconda* /root/original-ks.cfg /usr/local/README && \
+microdnf remove -y $DNF_TO_REMOVE && \
+rpm -e --nodeps $RPM_TO_FORCEFULLY_REMOVE && \
+microdnf clean all && \
+rm -rf /var/cache/dnf
 
 #USER 1001
 ENV HOME=/pattern-home
