@@ -1,6 +1,7 @@
 ---
 name: "Container build and test"
 on: [push, pull_request, workflow_call]
+permissions: read-all
 
 jobs:
   podman-build:
