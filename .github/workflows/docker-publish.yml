@@ -24,7 +24,7 @@ env:
 
 jobs:
   test:
-    uses: mbaldessari/imperative-container/.github/workflows/container-test.yml
+    uses: ./.github/workflows/container-test.yml
     permissions:
       contents: read
 
