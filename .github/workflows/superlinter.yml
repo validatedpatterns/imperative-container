@@ -27,9 +27,9 @@ jobs:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # These are the validation we disable atm
+          VALIDATE_MARKDOWN_PRETTIER: false
           VALIDATE_SHELL_SHFMT: false
           VALIDATE_YAML_PRETTIER: false
           # VALIDATE_DOCKERFILE_HADOLINT: false
-          # VALIDATE_MARKDOWN: false
           # VALIDATE_NATURAL_LANGUAGE: false
           # VALIDATE_TEKTON: false
