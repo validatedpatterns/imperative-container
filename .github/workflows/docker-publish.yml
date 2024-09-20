@@ -23,8 +23,13 @@ env:
 
 
 jobs:
-  build:
+  test:
+    uses: mbaldessari/imperative-container/.github/workflows/container-test.yml
+    permissions:
+      contents: read
 
+  build:
+    needs: [test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
