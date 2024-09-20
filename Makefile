@@ -134,3 +134,23 @@ upload: ## Uploads the container to quay.io/hybridcloudpatterns/${CONTAINER}
 .PHONY: clean
 clean: ## Removes any previously built artifact
 	buildah manifest rm "${REGISTRY}/${CONTAINER}"
+
+.PHONY: super-linter
+super-linter: ## Runs super linter locally
+	rm -rf .mypy_cache
+	podman run -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true	\
+					-e VALIDATE_SHELL_SHFMT=false \
+					-e VALIDATE_YAML_PRETTIER=false \
+					-v $(PWD):/tmp/lint:rw,z \
+					-w /tmp/lint \
+					ghcr.io/super-linter/super-linter:slim-v7
+					# -e VALIDATE_ANSIBLE=false \
+					# -e VALIDATE_BASH=false \
+					# -e VALIDATE_DOCKERFILE_HADOLINT=false \
+					# -e VALIDATE_JSCPD=false \
+					# -e VALIDATE_JSON_PRETTIER=false \
+					# -e VALIDATE_MARKDOWN_PRETTIER=false \
+					# -e VALIDATE_KUBERNETES_KUBECONFORM=false \
+					# -e VALIDATE_PYTHON_PYLINT=false \
+					# -e VALIDATE_TEKTON=false \
+					# -e VALIDATE_YAML=false \
