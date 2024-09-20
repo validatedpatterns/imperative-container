@@ -27,8 +27,6 @@ env:
 jobs:
   test:
     uses: ./.github/workflows/container-test.yml
-    permissions:
-      contents: read
 
   build:
     needs: [test]
