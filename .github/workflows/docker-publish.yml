@@ -28,7 +28,7 @@ jobs:
   test:
     uses: ./.github/workflows/container-test.yml
 
-  build:
+  build-container-and-push:
     needs: [test]
     runs-on: ubuntu-latest
     permissions:
