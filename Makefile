@@ -5,7 +5,7 @@ CONTAINER ?= $(NAME):$(TAG)
 DISABLE_LINTERS ?= "-e VALIDATE_SHELL_SHFMT=false"
 
 REGISTRY ?= localhost
-UPLOADREGISTRY ?= quay.io/rhn_support_mbaldess
+UPLOADREGISTRY ?= quay.io/hybridcloudpatterns
 TESTCOMMAND := "set -e; echo '* oc: '; oc version ; \
 		echo '* yq: '; yq --version ; \
 		echo '* Python: '; python --version ; \
