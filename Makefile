@@ -91,20 +91,14 @@ versions: ## Print all the versions of software in the locally-built container
 		echo -n \"|openshift binary \"; oc version --client -o json | jq -j '.releaseClientVersion';  echo \" \"; \
 		echo -n \"|ansible pip \"; ansible --version -o json | grep core | cut -f3 -d\ | tr -d '\n]';  echo \" \"; \
 		echo -n \"|kubernetes pip \"; pip show kubernetes |grep ^Version: | cut -f2 -d\ | tr -d '\n';  echo \" \"; \
-		echo -n \"|awxkit pip \"; pip show awxkit| grep ^Version: | cut -f2 -d\ |tr -d '\n';  echo \" \"; \
 		echo -n \"|jmespath pip \"; pip show jmespath| grep ^Version: | cut -f2 -d\ |tr -d '\n';  echo \" \"; \
 		echo -n \"|ansible-runner pip \"; pip show ansible-runner| grep ^Version: | cut -f2 -d\ |tr -d '\n';  echo \" \"; \
 		echo -n \"|kubernetes.core collection \";  ansible-galaxy collection list kubernetes.core |grep ^kubernetes.core | cut -f2 -d\  |tr -d '\n';  echo \" \"; \
 		echo -n \"|community.okd collection \";  ansible-galaxy collection list community.okd |grep ^community.okd | cut -f2 -d\  |tr -d '\n';  echo \" \"; \
 		echo -n \"|community.general collection \";  ansible-galaxy collection list community.general |grep ^community.general | cut -f2 -d\  |tr -d '\n';  echo \" \"; \
-		echo -n \"|awx.awx collection \";  ansible-galaxy collection list awx.awx |grep ^awx.awx | tr -s ' ' | cut -f2 -d ' '  |tr -d '\n';  echo \" \"; \
 		echo -n \"|ansible.posix collection \";  ansible-galaxy collection list ansible.posix |grep ^ansible.posix | cut -f2 -d\  |tr -d '\n';  echo \" \"; \
 		echo -n \"|ansible.utils collection \";  ansible-galaxy collection list ansible.utils |grep ^ansible.utils | cut -f2 -d\  |tr -d '\n';  echo \" \"; \
-		echo -n \"|rhvp.cluster_utils collection \";  ansible-galaxy collection list rhvp.cluster_utils |grep ^rhvp.cluster_utils | cut -f2 -d\  |tr -d '\n';  echo \" \"; \
-		echo -n \"|redhat_cop.controller_configuration collection \";  ansible-galaxy collection list redhat_cop.controller_configuration |grep ^redhat_cop.controller_configuration | cut -f2 -d\ | tr -d '\n'; echo \" \";  \
-		echo -n \"|infra.controller_configuration collection \";  ansible-galaxy collection list infra.controller_configuration |grep ^infra.controller_configuration | cut -f2 -d\ | tr -d '\n'; echo \" \";  \
-		echo -n \"|infra.eda_configuration collection \";  ansible-galaxy collection list infra.eda_configuration |grep ^infra.eda_configuration | cut -f2 -d\ | tr -d '\n'; echo \" \";  \
-		echo -n \"|infra.ah_configuration collection \";  ansible-galaxy collection list infra.ah_configuration |grep ^infra.ah_configuration | cut -f2 -d\ | tr -d '\n'; echo \" \";  " | sort | column --table -o '|'
+		echo -n \"|rhvp.cluster_utils collection \";  ansible-galaxy collection list rhvp.cluster_utils |grep ^rhvp.cluster_utils | cut -f2 -d\  |tr -d '\n';  echo \" \"" | sort | column --table -o '|'
 
 .PHONY: run
 run: ## Runs the container interactively
