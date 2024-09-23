@@ -11,11 +11,6 @@ TESTCOMMAND := "set -e; echo '* oc: '; oc version ; \
 		echo '* Python: '; python --version ; \
 		echo '* Ansible: '; ansible --version ; \
 		echo '* kubernetes.core: '; ansible-galaxy collection list | grep kubernetes.core ; \
-		echo '* redhat_cop.controller_configuration: '; ansible-galaxy collection list | grep redhat_cop.controller_configuration ; \
-		echo '* infra.controller_configuration: '; ansible-galaxy collection list | grep infra.controller_configuration ; \
-		echo '* infra.eda_configuration: '; ansible-galaxy collection list | grep infra.eda_configuration ; \
-		echo '* infra.ah_configuration: '; ansible-galaxy collection list | grep infra.ah_configuration ; \
-		echo '* awx.awx: '; ansible-galaxy collection list | grep awx.awx ; \
 		echo '* community.general: '; ansible-galaxy collection list | grep community.general ; \
 		echo '* ansible.posix: '; ansible-galaxy collection list | grep ansible.posix ; \
 		echo '* ansible.utils: '; ansible-galaxy collection list | grep ansible.utils ; \
@@ -116,15 +111,6 @@ run: ## Runs the container interactively
 		-v ${HOME}:/pattern \
 		-v ${HOME}:${HOME} \
 		-w $$(pwd) "${REGISTRY}/${CONTAINER}-amd64" sh
-
-.PHONY: super-linter
-super-linter: ## Runs super linter locally
-	rm -rf .mypy_cache
-	podman run -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true	\
-					$(DISABLE_LINTERS) \
-					-v $(PWD):/tmp/lint:rw,z \
-					-w /tmp/lint \
-					ghcr.io/super-linter/super-linter:slim-v7
 
 .PHONY: upload
 upload: ## Uploads the container to quay.io/hybridcloudpatterns/${CONTAINER}
