@@ -16,6 +16,7 @@ TESTCOMMAND := "set -e; echo '* oc: '; oc version ; \
 		echo '* ansible.utils: '; ansible-galaxy collection list | grep ansible.utils ; \
 		echo '* rhvp.cluster_utils: '; ansible-galaxy collection list | grep rhvp.cluster_utils ; \
 		echo '* diff: '; diff --version ; \
+		echo '* gzip: '; gzip --version ; \
 		echo '* find: '; find --version ;"
 
 ##@ Help-related tasks
@@ -88,6 +89,7 @@ versions: ## Print all the versions of software in the locally-built container
 		echo -n \"|make package \"; rpm -q --qf '%{VERSION}' make;  echo \" \"; \
 		echo -n \"|python package \";  /usr/bin/python3 --version | sed -e s'/Python //' | tr -d '\n';  echo \" \"; \
 		echo -n \"|jq package \"; rpm -q --qf '%{VERSION}' jq;  echo \" \"; \
+		echo -n \"|gzip package \"; rpm -q --qf '%{VERSION}' gzip;  echo \" \"; \
 		echo -n \"|openshift binary \"; oc version --client -o json | jq -j '.releaseClientVersion';  echo \" \"; \
 		echo -n \"|ansible pip \"; ansible --version -o json | grep core | cut -f3 -d\ | tr -d '\n]';  echo \" \"; \
 		echo -n \"|kubernetes pip \"; pip show kubernetes |grep ^Version: | cut -f2 -d\ | tr -d '\n';  echo \" \"; \
