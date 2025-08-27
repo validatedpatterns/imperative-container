@@ -17,12 +17,13 @@ This container provides a focused environment with essential tools for executing
 |ansible.posix     |collection|2.1.0  |
 |ansible-runner    |pip       |2.4.1  |
 |ansible.utils     |collection|6.0.0  |
-|community.general |collection|11.1.1 |
+|community.general |collection|11.2.1 |
 |community.okd     |collection|5.0.0  |
 |git-core          |package   |2.47.3 |
+|gzip              |package   |1.12   |
 |jmespath          |pip       |1.0.1  |
 |jq                |package   |1.6    |
-|kubernetes.core   |collection|6.0.0  |
+|kubernetes.core   |collection|6.1.0  |
 |kubernetes        |pip       |33.1.0 |
 |make              |package   |4.3    |
 |openshift         |binary    |4.16.14|
