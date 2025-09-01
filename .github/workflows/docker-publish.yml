@@ -8,8 +8,6 @@ name: Docker build and push to quay
 permissions: read-all
 
 on:
-  schedule:
-    - cron: '23 17 * * *'
   push:
     branches: ['main', 'v1']
     # Publish semver tags as releases.
