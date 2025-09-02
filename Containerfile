@@ -52,7 +52,7 @@ RUN alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERS
 # Add requirements.yml file for ansible collections
 COPY requirements.yml /tmp/requirements.yml
 
-RUN microdnf --disableplugin=subscription-manager install -y make git-core tar jq which findutils diffutils sshpass gzip $EXTRARPMS && \
+RUN microdnf --disableplugin=subscription-manager install -y make git-core tar jq which findutils diffutils sshpass gzip vi $EXTRARPMS && \
 curl -sLfO https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OPENSHIFT_CLIENT_VERSION}/openshift-client-linux-${OPTTARGETARCH}${OPENSHIFT_CLIENT_VERSION}.tar.gz && \
 tar xvf openshift-client-linux-${OPTTARGETARCH}${OPENSHIFT_CLIENT_VERSION}.tar.gz -C /usr/local/bin && \
 rm -rf openshift-client-linux-${OPTTARGETARCH}${OPENSHIFT_CLIENT_VERSION}.tar.gz  && rm -f /usr/local/bin/kubectl && ln -sf /usr/local/bin/oc /usr/local/bin/kubectl && \
