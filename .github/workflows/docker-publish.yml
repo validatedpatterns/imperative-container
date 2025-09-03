@@ -75,7 +75,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5.8.0
         with:
-          images: ${{ env.REGISTRY }}/${{ vars.QUAY_IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ vars.QUAY_IMAGE_NAME || 'hybridcloutpatterns/imperative-container' }}
           flavor: |
             latest=${{ github.ref == 'refs/heads/main' }}
 
