@@ -70,38 +70,59 @@ jobs:
 
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
+      # We add the latest tag only when we are on the main branch
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5.8.0
         with:
-          images: ${{ env.REGISTRY }}/${{ vars.QUAY_IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ vars.QUAY_IMAGE_NAME || 'hybridcloutpatterns/imperative-container' }}
+          flavor: |
+            latest=${{ github.ref == 'refs/heads/main' }}
 
-      # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        id: build-and-push
+      # Build Docker image with Buildx. When it is a pull request we use
+      # the cache and we do not push the build anywhere, below when it is not
+      # a pull_request, but a push/merge, then we do not cache anything so we are
+      # sure to pull in the last cluster_utils changes *and* we push the build to
+      # the registry
+      - name: Build and push Docker image for pull request (with cache)
+        id: build-and-push-with-cache
+        if: ${{ github.event_name == 'pull_request' }}
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           context: .
           file: Containerfile
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Build and push Docker image for pushed (without cache)
+        id: build-and-push-without-cache
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: Containerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          no-cache: true
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
       # repository is public to avoid leaking data.  If you would like to publish
       # transparency data even for private images, pass --force to cosign below.
       # https://github.com/sigstore/cosign
-      - name: Sign the published Docker image
+      - name: Sign the published Docker image when not a PR
         if: ${{ github.event_name != 'pull_request' }}
         env:
           # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
           TAGS: ${{ steps.meta.outputs.tags }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+          DIGEST: ${{ steps.build-and-push-without-cache.outputs.digest }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I "{}" cosign sign --yes "{}@${DIGEST}"
