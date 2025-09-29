@@ -1,40 +1,74 @@
----
-name: Docker build and push to quay
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-permissions: read-all
+name: Build (amd64 and arm64) and push to quay registries
 
 on:
   push:
-    branches: ['main', 'v1']
-    # Publish semver tags as releases.
-    tags: ['v*.*.*']
+    branches: ["main"]
+    tags: ["v*.*.*"]
   pull_request:
     branches: ["main"]
 
   workflow_dispatch:
 
-env:
-  # Use docker.io for Docker Hub if empty
-  REGISTRY: quay.io
-  # The following is stored in a per-repo env config variable
-  # github.repository as <account>/<repo>
-  # QUAY_IMAGE_NAME: hybridcloudpatterns/imperative-container
+  repository_dispatch:
+    types: [dependency-updated]
 
+permissions:
+  contents: read
+
+env:
+  REGISTRY: localhost
+  NAME: imperative-container
+  TAG: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || (github.ref_name == 'main' && 'latest' || github.ref_name) }}
 
 jobs:
-  test:
-    uses: ./.github/workflows/container-test.yml
+  build-container:
+    strategy:
+      matrix:
+        include:
+          - targetarch: amd64
+            runner: ubuntu-latest
+          - targetarch: arm64
+            runner: ubuntu-24.04-arm
 
-  build-container-and-push:
-    needs: [test]
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Build container and save tarball
+        env:
+          CONTAINER: ${{ env.NAME }}:${{ env.TAG }}
+          TARGETARCH: ${{ matrix.targetarch }}
+        run: |
+          make "${TARGETARCH}"
+          buildah push "${CONTAINER}-${TARGETARCH}" "docker-archive:/tmp/image-${TARGETARCH}.tar:${CONTAINER}-${TARGETARCH}"
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.targetarch }}-${{ github.run_id }}
+          path: /tmp/image-${{ matrix.targetarch }}.tar
+          retention-days: 1
+
+  push-multiarch-manifest:
+    needs: [build-container]
+    if: github.event_name != 'pull_request'
+    strategy:
+      matrix:
+        include:
+          - upload_registry: quay.io/validatedpatterns
+            legacy: false
+          - upload_registry: quay.io/hybridcloudpatterns
+            legacy: true
+
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
       # This is used to complete the identity challenge
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
@@ -45,71 +79,57 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      # Install the cosign tool except on PR
-      # https://github.com/sigstore/cosign-installer
-      - name: Install cosign
-        if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@d7543c93d881b35a8faa02e8e3605f69b7a1ce62 # v3.10.0
+      - name: Download AMD64 image
+        uses: actions/download-artifact@v5
         with:
-          cosign-release: 'v2.2.4'
+          name: image-amd64-${{ github.run_id }}
+          path: /tmp
 
-      # Set up BuildKit Docker container builder to be able to build
-      # multi-platform images and export cache
-      # https://github.com/docker/setup-buildx-action
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
-
-      # Login against a Docker registry except on PR
-      # https://github.com/docker/login-action
-      - name: Log into registry ${{ env.REGISTRY }}
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+      - name: Download ARM64 image
+        uses: actions/download-artifact@v5
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASSWORD }}
+          name: image-arm64-${{ github.run_id }}
+          path: /tmp
 
-      # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
-      # We add the latest tag only when we are on the main branch
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5.8.0
-        with:
-          images: ${{ env.REGISTRY }}/${{ vars.QUAY_IMAGE_NAME || 'hybridcloudpatterns/imperative-container' }}
-          flavor: |
-            latest=${{ github.ref == 'refs/heads/main' }}
+      - name: Load tarballs into local containers-storage
+        run: |
+          buildah pull docker-archive:/tmp/image-amd64.tar
+          buildah pull docker-archive:/tmp/image-arm64.tar
 
-      # https://github.com/docker/build-push-action
-      # Build Docker image with Buildx. We always disable the cache as
-      # it sometimes would not pull the new git changes for the cluster_utils,v1
-      # We only push to an actual registry when it is not a pull request (merge/push)
-      - name: Build and push Docker image
-        id: build-and-push
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
-        with:
-          context: .
-          file: Containerfile
-          platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          no-cache: true
-
-      # Sign the resulting Docker image digest except on PRs.
-      # This will only write to the public Rekor transparency log when the Docker
-      # repository is public to avoid leaking data.  If you would like to publish
-      # transparency data even for private images, pass --force to cosign below.
-      # https://github.com/sigstore/cosign
-      - name: Sign the published Docker image when not a PR
-        if: ${{ github.event_name != 'pull_request' }}
+      - name: Log into Quay
         env:
-          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-          TAGS: ${{ steps.meta.outputs.tags }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
-        run: echo "${TAGS}" | xargs -I "{}" cosign sign --yes "{}@${DIGEST}"
+          USERNAME: ${{ matrix.legacy && secrets.LEGACY_QUAY_USERNAME || secrets.QUAY_USERNAME }}
+          PASSWORD: ${{ matrix.legacy && secrets.LEGACY_QUAY_PASSWORD || secrets.QUAY_PASSWORD }}
+        run: |
+          buildah login -u "${USERNAME}" -p "${PASSWORD}" quay.io
+
+      # The compressed manifest in Quay has a different digest than the local so we
+      # need to use skopeo to retrieve the correct digest for signing
+      - name: Create manifest and push to Quay
+        id: manifest-push
+        env:
+          UPLOADREGISTRY: ${{ matrix.upload_registry }}
+          CONTAINER: ${{ env.NAME }}:${{ env.TAG }}
+        run: |
+          make manifest
+          buildah manifest add --arch=amd64 "${REGISTRY}/${CONTAINER}" "${REGISTRY}/${CONTAINER}-amd64"
+          buildah manifest add --arch=arm64 "${REGISTRY}/${CONTAINER}" "${REGISTRY}/${CONTAINER}-arm64"
+          make upload
+          DIGEST=$(skopeo inspect --format "{{.Digest}}" "docker://${UPLOADREGISTRY}/${CONTAINER}")
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
+        with:
+          cosign-release: "v2.2.4"
+
+      # Cosign expects the docker config.json for registry authentication so we must
+      # copy it from buildah
+      - name: Sign the published Docker image
+        env:
+          CONTAINER: ${{ env.NAME }}:${{ env.TAG }}
+          DIGEST: ${{ steps.manifest-push.outputs.digest }}
+          UPLOADREGISTRY: ${{ matrix.upload_registry }}
+        run: |
+          cat "${XDG_RUNTIME_DIR}/containers/auth.json" > ~/.docker/config.json
+          cosign sign --yes "${UPLOADREGISTRY}/${CONTAINER}@${DIGEST}"
