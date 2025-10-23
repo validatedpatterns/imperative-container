@@ -27,7 +27,7 @@ This container provides a focused environment with essential tools for executing
 |  kubernetes.core   | collection |  6.1.0  |
 |     kubernetes     |    pip     | 34.1.0  |
 |        make        |  package   |   4.3   |
-|     openshift      |   binary   | 4.16.14 |
+|     openshift      |   binary   | 4.19.17 |
 |    python3-pip     |  package   | 21.3.1  |
 |       python       |  package   | 3.11.11 |
 | rhvp.cluster_utils | collection |  1.1.0  |
