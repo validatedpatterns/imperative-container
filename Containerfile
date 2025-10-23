@@ -23,7 +23,7 @@ LABEL org.opencontainers.image.title="${TITLE}" \
 ARG DNF_TO_REMOVE="dejavu-sans-fonts langpacks-core-font-en langpacks-core-en langpacks-en tar"
 ARG RPM_TO_FORCEFULLY_REMOVE="cracklib-dicts"
 # Versions
-ARG OPENSHIFT_CLIENT_VERSION="4.16.14"
+ARG OPENSHIFT_CLIENT_VERSION="4.19.17"
 
 # As of 9/5/2024: awxkit is not compatible with python 3.12 due to setuptools
 # Ansible-core 2.16 is needed for losing track of async jobs (as noted in AGOF for infra.controller_configuration)
