@@ -8,7 +8,7 @@ ignore: |
 
 rules:
   truthy:
-    allowed-values: ['true', 'false']
+    allowed-values: ["true", "false"]
     check-keys: false
     level: error
   line-length: disable
