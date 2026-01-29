@@ -14,23 +14,23 @@ This container provides a focused environment with essential tools for executing
 
 | name | type | version |
 | :----------------: | :--------: | :-----: |
-|ansible |pip |2.16.14 |
-|ansible.posix |collection |2.1.0 |
+|ansible |pip |2.16.15|
+|ansible.posix |collection|2.1.0 |
 |ansible-runner |pip |2.4.2 |
-|ansible.utils |collection |6.0.0 |
-|community.general |collection |11.4.1 |
-|community.okd |collection |5.0.0 |
+|ansible.utils |collection|6.0.1 |
+|community.general |collection|12.3.0 |
+|community.okd |collection|5.0.0 |
 |git-core |package |2.47.3 |
 |gzip |package |1.12 |
-|jmespath |pip |1.0.1 |
+|jmespath |pip |1.1.0 |
 |jq |package |1.6 |
-|kubernetes.core |collection |6.2.0 |
-|kubernetes |pip |34.1.0 |
+|kubernetes.core |collection|6.2.0 |
+|kubernetes |pip |35.0.0 |
 |make |package |4.3 |
-|openshift |binary |4.19.17 |
+|openshift |binary |4.19.17|
 |python3-pip |package |21.3.1 |
-|python |package |3.11.11 |
-|rhvp.cluster_utils |collection |1.1.0 |
+|python |package |3.11.13|
+|rhvp.cluster_utils|collection|1.1.0 |
 |sshpass |package |1.09 |
 
 <!-- textlint-enable -->
